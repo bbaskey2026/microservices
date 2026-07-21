@@ -1,0 +1,112 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: banking_user
+      POSTGRES_PASSWORD: banking_pass
+      POSTGRES_MULTIPLE_DATABASES: auth_db,user_db,card_db,wallet_db,payment_db,notification_db,reports_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - banking_network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - banking_network
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    env_file: .env
+    depends_on:
+      - auth-service
+      - user-service
+    networks:
+      - banking_network
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3001:3001"
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - banking_network
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3002:3002"
+    env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - banking_network
+
+  card-service:
+    build: ./services/card-service
+    ports:
+      - "3003:3003"
+    env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - banking_network
+
+  wallet-service:
+    build: ./services/wallet-service
+    ports:
+      - "3004:3004"
+    env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - banking_network
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "3005:3005"
+    env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - banking_network
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "3006:3006"
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - banking_network
+
+  reports-service:
+    build: ./services/reports-service
+    ports:
+      - "3007:3007"
+    env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - banking_network
+
+volumes:
+  postgres_data:
+
+networks:
+  banking_network:
+    driver: bridge
