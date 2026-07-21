@@ -12,23 +12,26 @@ import (
 
 var DB *gorm.DB
 
-func ConnectPostgres(serviceName string) *gorm.DB {
+func ConnectSupabase() *gorm.DB {
+
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv(serviceName+"_DB_NAME"),
-		os.Getenv("DB_PORT"),
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+		os.Getenv("SUPABASE_HOST"),
+		os.Getenv("SUPABASE_USER"),
+		os.Getenv("SUPABASE_PASSWORD"),
+		os.Getenv("SUPABASE_DB"),
+		os.Getenv("SUPABASE_PORT"),
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
+
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect Supabase: %v", err)
 	}
 
-	log.Printf("✅ Connected to PostgreSQL for %s", serviceName)
+	log.Println("✅ Connected to Supabase")
+
 	return db
 }
